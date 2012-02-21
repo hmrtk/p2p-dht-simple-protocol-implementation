@@ -13,6 +13,8 @@ public class Peer {
 	private int Port;
 	private String Hostname;
 	private ArrayList<Hash> Hashtable;
+	private int MaxId;
+	
 	
 	/**
 	 * Constructor for Peer
@@ -90,6 +92,46 @@ public class Peer {
 	public void setHashtable(ArrayList<Hash> hashtable) {
 		Hashtable = hashtable;
 	}
+
+	/**
+	 * @return the maxId
+	 */
+	public int getMaxId() {
+		return MaxId;
+	}
+
+	/**
+	 * @param maxId the maxId to set
+	 */
+	public void setMaxId(int maxId) {
+		MaxId = maxId;
+	}
+	
+	public void getCommand(String command)
+	{
+		String[] ArrayCommand = command.split("\\s+");
+		
+		int counter = 0;
+		for(String strValue : ArrayCommand)
+		{
+			if(ArrayCommand.length>counter+1){
+				if(strValue.toUpperCase().equals("-I")){
+					System.out.println("-i "+ ArrayCommand[counter+1]); 
+				}
+				else if(strValue.toUpperCase().equals("-H") ){
+					System.out.println("-h "+ ArrayCommand[counter+1]); 
+				}
+				else if(strValue.toUpperCase().equals("-P")){
+					System.out.println("-p "+ ArrayCommand[counter+1]); 
+				}
+				else if(strValue.toUpperCase().equals("-M")){
+					System.out.println("-m "+ ArrayCommand[counter+1]); 
+				}
+			}
+			counter ++;
+		}
+	}
 	
 	
 }
+

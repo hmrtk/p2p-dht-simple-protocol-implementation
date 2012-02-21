@@ -107,7 +107,7 @@ public class Peer {
 		MaxId = maxId;
 	}
 	
-	public void getCommand(String command)
+	public void ProcessCommand(String command)
 	{
 		String[] ArrayCommand = command.split("\\s+");
 		
@@ -115,6 +115,7 @@ public class Peer {
 		for(String strValue : ArrayCommand)
 		{
 			if(ArrayCommand.length>counter+1){
+				
 				if(strValue.toUpperCase().equals("-I")){
 					System.out.println("-i "+ ArrayCommand[counter+1]); 
 				}

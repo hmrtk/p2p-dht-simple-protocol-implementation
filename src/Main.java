@@ -12,6 +12,6 @@ public class Main {
 	public static void main(String[] args)
 	{
 		Peer peer = new Peer();
-		peer.getCommand("kjhkjh -m gholi -i khjkj ");
+		peer.ProcessCommand("kjhkjh -m gholi -i khjkj ");
 	}
 }

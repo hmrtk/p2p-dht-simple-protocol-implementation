@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * 
  */
@@ -10,22 +12,22 @@
 public class Response {
 	private String version;
 	private String operation;
-	private int numOfLines;
+	private String numOfLines;
 	private String responseCode;
 	private String responseCodeStr;
-	private String[] message;
+	private ArrayList<String> message;
 
 	public Response(){
 		
 	}
 	
-	public Response(String Version, String Operation, int NumOfLines, String ResponseCode, String ResponseCodeStr, String[] Message){
+	public Response(String Version, String Operation, String NumOfLines, String ResponseCode, String ResponseCodeStr, ArrayList<String> responseMessage){
 		this.version = Version;
 		this.operation = Operation;
 		this.numOfLines = NumOfLines;
 		this.responseCode = ResponseCode;
 		this.responseCodeStr = ResponseCodeStr;
-		this.message = Message;
+		this.message = responseMessage;
 	}
 	/**
 	 * @return the version
@@ -58,14 +60,14 @@ public class Response {
 	/**
 	 * @return the numOfLines
 	 */
-	public int getNumOfLines() {
+	public String getNumOfLines() {
 		return numOfLines;
 	}
 
 	/**
 	 * @param numOfLines the numOfLines to set
 	 */
-	public void setNumOfLines(int numOfLines) {
+	public void setNumOfLines(String numOfLines) {
 		this.numOfLines = numOfLines;
 	}
 
@@ -100,22 +102,27 @@ public class Response {
 	/**
 	 * @return the message
 	 */
-	public String[] getMessage() {
+	public ArrayList<String> getMessage() {
 		return message;
 	}
 
 	/**
 	 * @param message the message to set
 	 */
-	public void setMessage(String[] message) {
+	public void setMessage(ArrayList<String> message) {
 		this.message = message;
 	}
 
 	public String toString()
 	{
-		if(message.length>0)
+		if(message.size()>0)
 		{
-			return "";
+			String msgOutput = "";
+			for(String str : message){
+				msgOutput +=str+"CRLF"; 
+			}
+			return this.getVersion()+" "+this.getOperation()+" "+this.getNumOfLines()+" "+this.getResponseCode()+" "+this.getResponseCodeStr()+"CRLF"
+					+msgOutput;
 		}
 		else{
 			return this.getVersion()+" "+this.getOperation()+" "+this.getNumOfLines()+" "+this.getResponseCode()+" "+this.getResponseCodeStr()+"CRLF";

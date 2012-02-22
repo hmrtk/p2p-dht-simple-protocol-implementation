@@ -154,6 +154,21 @@ public class peer {
 	public Request genRequest(String operation, int numOfLines, String peerID){
 		return new Request(operation, Settings.Version, numOfLines, peerID);
 	}
+//	/**
+//	 * Generates a Response object
+//	 * @param operation
+//	 * @param numOfLines
+//	 * @param responseCode
+//	 * @param responseCodestr
+//	 * @param message
+//	 * @return
+//	 */
+//	public Response genResponse(String operation, int numOfLines, String responseCode, String responseCodestr, String[] message){
+//		
+//		
+//		return new Response(Settings.Version, operation, numOfLines, responseCode, responseCodestr, message);
+//	}
+	
 	/**
 	 * Generates a Response object
 	 * @param operation
@@ -163,9 +178,31 @@ public class peer {
 	 * @param message
 	 * @return
 	 */
-	public Response genResponse(String operation, int numOfLines, String responseCode, String responseCodestr, String[] message){
-		return new Response(Settings.Version, operation, numOfLines, responseCode, responseCodestr, message);
-	}
+	public Response genResponse(String message){
+		
+		String[] ArrayMessage = message.split("CRLF");
+		String version = null;
+		String operation = null;
+		String numOfLines = null;
+		String responseCode = null;
+		String responseCodestr = null;
+		ArrayList<String> responseMessage = new ArrayList<String>();
+		for(String strValue : ArrayMessage){
+			if(strValue.contains(Settings.Version)){
+				String[] wordsInLine = strValue.split("\\s+");
+				version = wordsInLine[0];
+				operation = wordsInLine[1];
+				numOfLines = wordsInLine[2];
+				responseCode = wordsInLine[3];
+				responseCodestr = wordsInLine[4];
+			}
+			else{
+				responseMessage.add(strValue);
+			}
+		}
+		
+		return new Response(version, operation, numOfLines, responseCode, responseCodestr, responseMessage);
+	}	
 	/**
 	 * Processes the command sent from Main
 	 * @param command
@@ -209,13 +246,27 @@ public class peer {
 			counter ++;
 		}
 	}
+	
+	public void SendMessage(){
+		if(this.isFirstPeer()){
+			
+		}
+		else{
+			System.out.println( this.genRequest("ID", 0, this.getID()));
+		}
+	}
 
+	public void ReceiveMessage(String message){
+		System.out.println(this.genResponse(message));
+	}
 
 	
 	public static void main(String[] args) 
 	{
 		peer tmp = new peer();
 		tmp.ProcessFileInputArgs(args);
+		//tmp.SendMessage();
+		tmp.ReceiveMessage("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000CRLF");
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add("ID 3171_A3/1.0 0 29CRLF");
 		commands.add("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000CRLF");

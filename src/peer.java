@@ -145,10 +145,32 @@ public class peer {
 	}
 
 	/**
+	 * Generates a Request Object
+	 * @param operation
+	 * @param numOfLines
+	 * @param peerID
+	 * @return
+	 */
+	public Request genRequest(String operation, int numOfLines, String peerID){
+		return new Request(operation, Settings.Version, numOfLines, peerID);
+	}
+	/**
+	 * Generates a Response object
+	 * @param operation
+	 * @param numOfLines
+	 * @param responseCode
+	 * @param responseCodestr
+	 * @param message
+	 * @return
+	 */
+	public Response genResponse(String operation, int numOfLines, String responseCode, String responseCodestr, String[] message){
+		return new Response(Settings.Version, operation, numOfLines, responseCode, responseCodestr, message);
+	}
+	/**
 	 * Processes the command sent from Main
 	 * @param command
 	 */
-	public void ProcessCommand(String[] ArrayCommand)
+	public void ProcessFileInputArgs(String[] ArrayCommand)
 	{
 		int counter = 0;
 		for(String strValue : ArrayCommand)
@@ -193,7 +215,20 @@ public class peer {
 	public static void main(String[] args) 
 	{
 		peer tmp = new peer();
-		tmp.ProcessCommand(args);
+		tmp.ProcessFileInputArgs(args);
+		ArrayList<String> commands = new ArrayList<String>();
+		commands.add("ID 3171_A3/1.0 0 29CRLF");
+		commands.add("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000CRLF");
+		commands.add("ID 3171_a3/1.0 0 29CRLF");
+		commands.add("3171_a3/1.0 ID 1 301 redirectCRLF hector.cs.dal.ca 1024CRLF");
+		commands.add("ID 3171_a3/1.0 0 29CRLF");
+		commands.add("3171_a3/1.0 ID 0 200 okCRLF");
+		commands.add("NEXT 3171_a3/1.0 0CRLF");
+		commands.add("3171_a3/1.0 NEXT 1 200 okCRLF bluenose.cs.dal.ca 2100 7CRLF");
+		commands.add("PULL 3171_a3/1.0 1 29CRLF newbie.cs.dal.ca 2112CRLF");
+		commands.add("3171_a3/1.0 PULL 2 200 okCRLF jumps over theCRLF lazy dogCRLF");
+		commands.add("DONE 3171_a3/1.0 0CRLF");
+		
 	}
 
 }

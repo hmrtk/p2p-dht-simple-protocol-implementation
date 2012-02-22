@@ -14,7 +14,19 @@ public class Response {
 	private String responseCode;
 	private String responseCodeStr;
 	private String[] message;
+
+	public Response(){
+		
+	}
 	
+	public Response(String Version, String Operation, int NumOfLines, String ResponseCode, String ResponseCodeStr, String[] Message){
+		this.version = Version;
+		this.operation = Operation;
+		this.numOfLines = NumOfLines;
+		this.responseCode = ResponseCode;
+		this.responseCodeStr = ResponseCodeStr;
+		this.message = Message;
+	}
 	/**
 	 * @return the version
 	 */
@@ -106,7 +118,7 @@ public class Response {
 			return "";
 		}
 		else{
-			return version+" "+operation+" "+numOfLines+" "+responseCode+" "+responseCodeStr+"CRLF";
+			return this.getVersion()+" "+this.getOperation()+" "+this.getNumOfLines()+" "+this.getResponseCode()+" "+this.getResponseCodeStr()+"CRLF";
 		} 
 	}
 }

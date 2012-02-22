@@ -20,7 +20,11 @@ public class Main {
 //    	System.out.println(prop.getProperty("version"));
 
     	
-		Peer peer = new Peer();
-		peer.ProcessCommand("kjhkjh -m gholi -i khjkj ");
+//		Peer peer = new Peer();
+//		peer.ProcessCommand("kjhkjh -m gholi -i khjkj ");
+		
+        for (String s: args) {
+            System.out.println(s);
+        }
 	}
 }

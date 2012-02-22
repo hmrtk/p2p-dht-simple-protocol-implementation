@@ -152,6 +152,9 @@ public class peer {
 	 * @return
 	 */
 	public Request genRequest(String operation, int numOfLines, String peerID){
+		if(peerID==null){
+			return new Request(operation, Settings.Version, numOfLines);
+		}
 		return new Request(operation, Settings.Version, numOfLines, peerID);
 	}
 //	/**
@@ -180,7 +183,7 @@ public class peer {
 	 */
 	public Response genResponse(String message){
 		
-		String[] ArrayMessage = message.split("CRLF");
+		String[] ArrayMessage = message.trim().split("CRLF");
 		String version = null;
 		String operation = null;
 		String numOfLines = null;
@@ -189,7 +192,7 @@ public class peer {
 		ArrayList<String> responseMessage = new ArrayList<String>();
 		for(String strValue : ArrayMessage){
 			if(strValue.contains(Settings.Version)){
-				String[] wordsInLine = strValue.split("\\s+");
+				String[] wordsInLine = strValue.trim().split("\\s+");
 				version = wordsInLine[0];
 				operation = wordsInLine[1];
 				numOfLines = wordsInLine[2];
@@ -258,6 +261,22 @@ public class peer {
 
 	public void ReceiveMessage(String message){
 		System.out.println(this.genResponse(message));
+		System.out.println(this.IDQueryResponseProcess(this.genResponse(message)));
+	}
+	
+	public Request IDQueryResponseProcess(Response response){
+		switch(Integer.parseInt(response.getResponseCode())){
+		case 301:
+			//interpret first element of the arraylist containing the message to get the information for next hostname and port number
+			String[] msg = response.getMessage().get(0).trim().split("\\s+"); 
+			this.setOtherPeerHostName(msg[0]);
+			this.setOtherPeerPort(msg[1]);
+			return this.genRequest("ID", 0, this.getID());
+		case 200:
+			return this.genRequest("NEXT", 0, null);
+		default:
+			return this.genRequest("ID", 0, this.getID());
+		}
 	}
 
 	
@@ -266,7 +285,12 @@ public class peer {
 		peer tmp = new peer();
 		tmp.ProcessFileInputArgs(args);
 		//tmp.SendMessage();
-		tmp.ReceiveMessage("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000CRLF");
+		tmp.ReceiveMessage("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF");
+		System.out.println(tmp.getOtherPeerHostName());
+		System.out.println(tmp.getOtherPeerPort());
+		
+		
+		
 		ArrayList<String> commands = new ArrayList<String>();
 		commands.add("ID 3171_A3/1.0 0 29CRLF");
 		commands.add("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000CRLF");

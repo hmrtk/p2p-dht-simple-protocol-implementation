@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 /**
  * 
  */
@@ -12,15 +14,30 @@ public class Request {
 	private String version;
 	private int numOfLines;
 	private String peerID;
+	private ArrayList<String> message;
 	
 	public Request() {
 		
 	}
+	public Request(String operation, String version, int numOfLines) {
+		this.operation = operation;
+		this.version = version;
+		this.numOfLines = numOfLines;
+		this.message = new ArrayList<String>();
+	}	
 	public Request(String operation, String version, int numOfLines, String peerID){
 		this.operation = operation;
 		this.version = version;
 		this.numOfLines = numOfLines;
 		this.peerID = peerID;
+		this.message = new ArrayList<String>();
+	}
+	public Request(String operation, String version, int numOfLines, String peerID, ArrayList<String> responseMessage){
+		this.operation = operation;
+		this.version = version;
+		this.numOfLines = numOfLines;
+		this.peerID = peerID;
+		this.message = responseMessage;
 	}
 	/**
 	 * @return the operation
@@ -80,6 +97,19 @@ public class Request {
 
 	public String toString()
 	{
+		if(message.size()>0)
+		{
+			String msgOutput = "";
+			for(String str : message){
+				msgOutput +=str+"CRLF"; 
+			}
+			return this.getOperation()+" "+this.getVersion()+" "+this.getNumOfLines()+" "+this.getPeerID()+"CRLF"
+					+msgOutput;
+		}
+		else if(this.getPeerID()==null)
+		{
+			return this.getOperation()+" "+this.getVersion()+" "+this.getNumOfLines()+"CRLF";
+		}
 		return this.getOperation()+" "+this.getVersion()+" "+this.getNumOfLines()+" "+this.getPeerID()+"CRLF";
 	}
 }

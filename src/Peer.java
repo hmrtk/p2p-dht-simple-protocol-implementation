@@ -8,11 +8,11 @@ import java.util.ArrayList;
  */
 public class Peer {
 
-	private Peer NextPeer;
+	private int NextPeerID;
 	private int ID;
 	private int Port;
 	private String Hostname;
-	private ArrayList<Hash> Hashtable;
+	private ArrayList<StringHash> StringHashArraylist;
 	private int MaxId;
 	
 	
@@ -21,20 +21,6 @@ public class Peer {
 	 */
 	public Peer(){
 		
-	}
-
-	/**
-	 * @return the nextPeer
-	 */
-	public Peer getNextPeer() {
-		return NextPeer;
-	}
-
-	/**
-	 * @param nextPeer the nextPeer to set
-	 */
-	public void setNextPeer(Peer nextPeer) {
-		NextPeer = nextPeer;
 	}
 
 	/**
@@ -73,27 +59,6 @@ public class Peer {
 	}
 
 	/**
-	 * @param hostname the hostname to set
-	 */
-	public void setHostname(String hostname) {
-		Hostname = hostname;
-	}
-
-	/**
-	 * @return the hashtable
-	 */
-	public ArrayList<Hash> getHashtable() {
-		return Hashtable;
-	}
-
-	/**
-	 * @param hashtable the hashtable to set
-	 */
-	public void setHashtable(ArrayList<Hash> hashtable) {
-		Hashtable = hashtable;
-	}
-
-	/**
 	 * @return the maxId
 	 */
 	public int getMaxId() {
@@ -106,7 +71,37 @@ public class Peer {
 	public void setMaxId(int maxId) {
 		MaxId = maxId;
 	}
-	
+
+	/**
+	 * @return the stringHashArraylist
+	 */
+	public ArrayList<StringHash> getStringHashArraylist() {
+		return StringHashArraylist;
+	}
+
+	/**
+	 * @param stringHashArraylist the stringHashArraylist to set
+	 */
+	public void setStringHashArraylist(ArrayList<StringHash> stringHashArraylist) {
+		StringHashArraylist = stringHashArraylist;
+	}
+	/**
+	 * @return the nextPeerID
+	 */
+	public int getNextPeerID() {
+		return NextPeerID;
+	}
+
+	/**
+	 * @param nextPeerID the nextPeerID to set
+	 */
+	public void setNextPeerID(int nextPeerID) {
+		NextPeerID = nextPeerID;
+	}
+	/**
+	 * Processes the command sent from Main
+	 * @param command
+	 */
 	public void ProcessCommand(String command)
 	{
 		String[] ArrayCommand = command.split("\\s+");
@@ -132,6 +127,43 @@ public class Peer {
 			counter ++;
 		}
 	}
+
+	/**
+	 * Request template
+	 * 
+	 * @param operation
+	 * @param version
+	 * @param numOfLines
+	 * @param peerID
+	 * @return String
+	 */
+	public String Request(String operation, String version, int numOfLines, int peerID)
+	{
+		return operation+" "+version+" "+numOfLines+" "+peerID+"CRLF";
+	}
+	
+	/**
+	 * Response Template 
+	 * 
+	 * @param version
+	 * @param operation
+	 * @param numOfLines
+	 * @param responseCode
+	 * @param responseCodeStr
+	 * @param message
+	 * @return string
+	 */
+	public String Response(String version, String operation, String numOfLines, int responseCode, String responseCodeStr, String[] message)
+	{
+		if(message.length>0)
+		{
+			return "";
+		}
+		else{
+			return version+" "+operation+" "+numOfLines+" "+responseCode+" "+responseCodeStr+"CRLF";
+		} 
+	}
+	
 	
 	
 }

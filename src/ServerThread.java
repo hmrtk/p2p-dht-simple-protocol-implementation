@@ -63,8 +63,9 @@ public class ServerThread extends Thread {
 //	    out.println(outputLine);
 
 	    while ((inputLine = in.readLine()) != null) {	
-		outputLine = ServerThread.processInput(inputLine);
-		outputLine = this.peer.ReceiveMessage(inputLine).toString();
+		System.out.println("[Received] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+inputLine);
+		outputLine = this.peer.Protocol(inputLine).toString();
+		System.out.println("[Sent] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+outputLine);
 		out.println(outputLine);
 		if (outputLine.equals("Bye"))
 		    break;

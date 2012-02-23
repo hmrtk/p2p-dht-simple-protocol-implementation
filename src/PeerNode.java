@@ -143,6 +143,11 @@ public class PeerNode {
 	public void setOtherPeerPort(String otherPeerPort) {
 		OtherPeerPort = otherPeerPort;
 	}
+	
+	public String toString(){
+		return "Hostname: "+this.Hostname+" Port: "+this.Port+" ID: "+this.ID+" NextHostname: "+this.OtherPeerHostName+" NextPort: "+
+			this.OtherPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer;
+	}
 
 	/**
 	 * Generates a Request Object
@@ -229,27 +234,27 @@ public class PeerNode {
 			if(ArrayCommand.length>counter+1){
 				
 				if(strValue.toUpperCase().equals("-I")){
-					System.out.println("-i "+ ArrayCommand[counter+1]);
+//					System.out.println("-i "+ ArrayCommand[counter+1]);
 					this.setID(ArrayCommand[counter+1]);
 				}
 				else if(strValue.toUpperCase().equals("-H") ){
-					System.out.println("-h "+ ArrayCommand[counter+1]); 
+//					System.out.println("-h "+ ArrayCommand[counter+1]); 
 					this.setHostname(ArrayCommand[counter+1]);
 				}
 				else if(strValue.toUpperCase().equals("-P")){
-					System.out.println("-p "+ ArrayCommand[counter+1]); 
+//					System.out.println("-p "+ ArrayCommand[counter+1]); 
 					this.setPort(ArrayCommand[counter+1]);
 				}
 				else if(strValue.toUpperCase().equals("-M")){
-					System.out.println("-m "+ ArrayCommand[counter+1]); 
+//					System.out.println("-m "+ ArrayCommand[counter+1]); 
 					this.setMaxId(Integer.parseInt(ArrayCommand[counter+1]));
 				}
 				else if(strValue.toUpperCase().equals("-R")){
-					System.out.println("-r "+ ArrayCommand[counter+1]); 
+//					System.out.println("-r "+ ArrayCommand[counter+1]); 
 					this.setOtherPeerHostName(ArrayCommand[counter+1]);
 				}
 				else if(strValue.toUpperCase().equals("-S")){
-					System.out.println("-s "+ ArrayCommand[counter+1]); 
+//					System.out.println("-s "+ ArrayCommand[counter+1]); 
 					this.setOtherPeerPort(ArrayCommand[counter+1]);
 				}
 			}
@@ -276,14 +281,22 @@ public class PeerNode {
 	/**
 	 * @param message
 	 */
-	public Response ReceiveMessage(String message){
+	public String Protocol(String message){
 		if(message.contains("ID"))
 		{
-			return this.IDQueryRequestProcess(this.genRequest(message));
+			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
+			if(firstWordOfMessage.equals(Settings.Version.toUpperCase()))
+			{
+				return this.IDQueryResponseProcess(this.genResponse(message)).toString();
+			}
+			else
+			{
+				return this.IDQueryRequestProcess(this.genRequest(message)).toString();
+			}	
 		}
 		else if(message.contains("NEXT"))
 		{
-			return this.NEXTQueryReuqestProcess(this.genRequest(message));
+			return this.NEXTQueryReuqestProcess(this.genRequest(message)).toString();
 		}
 		else if(message.contains("PULL"))
 		{
@@ -304,7 +317,10 @@ public class PeerNode {
 		else if(message.contains("DONE")){
 			
 		}
-		return new Response();
+		else if(message.contains("info")){
+			 return this.toString();
+		}
+		return "";
 //		System.out.println(this.genResponse(message));
 //		System.out.println(this.IDQueryResponseProcess(this.genResponse(message)));
 	}
@@ -368,14 +384,14 @@ public class PeerNode {
 		PeerNode tmp = new PeerNode();
 		tmp.ProcessFileInputArgs(args);
 		//tmp.SendMessage();
-//		tmp.ReceiveMessage("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF");
+		System.out.println(tmp.Protocol("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF"));
 //		System.out.println(tmp.getOtherPeerHostName());
 //		System.out.println(tmp.getOtherPeerPort());
-		tmp.setNextPeerID("29");
-
-		tmp.setID("29");
-		System.out.println(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
-		tmp.IDQueryRequestProcess(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
+//		tmp.setNextPeerID("29");
+//
+//		tmp.setID("29");
+//		System.out.println(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
+//		tmp.IDQueryRequestProcess(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
 		
 		
 		

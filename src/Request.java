@@ -95,6 +95,18 @@ public class Request {
 		this.peerID = peerID;
 	}
 
+	/**
+	 * @return the message
+	 */
+	public ArrayList<String> getMessage() {
+		return message;
+	}
+	/**
+	 * @param message the message to set
+	 */
+	public void setMessage(ArrayList<String> message) {
+		this.message = message;
+	}
 	public String toString()
 	{
 		if(message.size()>0)

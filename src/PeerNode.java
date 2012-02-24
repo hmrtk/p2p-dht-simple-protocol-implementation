@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 
+import org.omg.CORBA.VersionSpecHelper;
+
 
 /**
  * Class: Peer
@@ -12,8 +14,8 @@ public class PeerNode {
 	private String ID;
 	private String Port;
 	private String Hostname;
-	private String OtherPeerHostName;
-	private String OtherPeerPort;
+	private String NextPeerHostName;
+	private String NextPeerPort;
 	private ArrayList<StringHash> StringHashArraylist;
 	private int MaxId;
 	private boolean firstPeer = false;
@@ -117,36 +119,36 @@ public class PeerNode {
 		Hostname = hostname;
 	}
 	/**
-	 * @return the otherPeerHostName
+	 * @return the NextPeerHostName
 	 */
-	public String getOtherPeerHostName() {
-		return OtherPeerHostName;
+	public String getNextPeerHostName() {
+		return NextPeerHostName;
 	}
 
 	/**
-	 * @param otherPeerHostName the otherPeerHostName to set
+	 * @param NextPeerHostName the NextPeerHostName to set
 	 */
-	public void setOtherPeerHostName(String otherPeerHostName) {
-		OtherPeerHostName = otherPeerHostName;
+	public void setNextPeerHostName(String NextPeerHostName) {
+		this.NextPeerHostName = NextPeerHostName;
 	}
 
 	/**
-	 * @return the otherPeerPort
+	 * @return the NextPeerPort
 	 */
-	public String getOtherPeerPort() {
-		return OtherPeerPort;
+	public String getNextPeerPort() {
+		return NextPeerPort;
 	}
 
 	/**
-	 * @param otherPeerPort the otherPeerPort to set
+	 * @param NextPeerPort the NextPeerPort to set
 	 */
-	public void setOtherPeerPort(String otherPeerPort) {
-		OtherPeerPort = otherPeerPort;
+	public void setNextPeerPort(String NextPeerPort) {
+		this.NextPeerPort = NextPeerPort;
 	}
 	
 	public String toString(){
-		return "Hostname: "+this.Hostname+" Port: "+this.Port+" ID: "+this.ID+" NextHostname: "+this.OtherPeerHostName+" NextPort: "+
-			this.OtherPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer;
+		return "Hostname: "+this.Hostname+" Port: "+this.Port+" ID: "+this.ID+" NextHostname: "+this.NextPeerHostName+" NextPort: "+
+			this.NextPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer;
 	}
 
 	/**
@@ -168,7 +170,7 @@ public class PeerNode {
 		String operation = null;
 		int numOfLines = 0;
 		String peerID = null;
-		ArrayList<String> responseMessage = new ArrayList<String>();
+		ArrayList<String> Message = new ArrayList<String>();
 		for(String strValue : ArrayMessage){
 			if(strValue.toUpperCase().contains(Settings.Version.toUpperCase())){
 				String[] wordsInLine = strValue.trim().split("\\s+");
@@ -180,13 +182,13 @@ public class PeerNode {
 				}
 			}
 			else{
-				responseMessage.add(strValue);
+				Message.add(strValue);
 			}
 		}
 		if(peerID==null){
 			return new Request(operation, version, numOfLines);
 		}
-		return new Request(operation, version, numOfLines, peerID);
+		return new Request(operation, version, numOfLines, peerID, Message);
 	}	
 	/**
 	 * Generates a Response object
@@ -233,36 +235,41 @@ public class PeerNode {
 		{
 			if(ArrayCommand.length>counter+1){
 				
-				if(strValue.toUpperCase().equals("-I")){
+				if(strValue.trim().toUpperCase().equals("-I")){
 //					System.out.println("-i "+ ArrayCommand[counter+1]);
 					this.setID(ArrayCommand[counter+1]);
 				}
-				else if(strValue.toUpperCase().equals("-H") ){
+				else if(strValue.trim().toUpperCase().equals("-H") ){
 //					System.out.println("-h "+ ArrayCommand[counter+1]); 
 					this.setHostname(ArrayCommand[counter+1]);
 				}
-				else if(strValue.toUpperCase().equals("-P")){
+				else if(strValue.trim().toUpperCase().equals("-P")){
 //					System.out.println("-p "+ ArrayCommand[counter+1]); 
 					this.setPort(ArrayCommand[counter+1]);
 				}
-				else if(strValue.toUpperCase().equals("-M")){
+				else if(strValue.trim().toUpperCase().equals("-M")){
 //					System.out.println("-m "+ ArrayCommand[counter+1]); 
 					this.setMaxId(Integer.parseInt(ArrayCommand[counter+1]));
 				}
-				else if(strValue.toUpperCase().equals("-R")){
+				else if(strValue.trim().toUpperCase().equals("-R")){
 //					System.out.println("-r "+ ArrayCommand[counter+1]); 
-					this.setOtherPeerHostName(ArrayCommand[counter+1]);
+					this.setNextPeerHostName(ArrayCommand[counter+1]);
 				}
-				else if(strValue.toUpperCase().equals("-S")){
+				else if(strValue.trim().toUpperCase().equals("-S")){
 //					System.out.println("-s "+ ArrayCommand[counter+1]); 
-					this.setOtherPeerPort(ArrayCommand[counter+1]);
+					this.setNextPeerPort(ArrayCommand[counter+1]);
 				}
 			}
-			else if(strValue.toUpperCase().equals("-I"))
+			else if(strValue.trim().toUpperCase().equals("-F"))
 			{
 				this.setFirstPeer(true);
 			}
 			counter ++;
+		}
+		if(this.firstPeer && !this.Hostname.equals(null) && !this.Port.equals(null)){
+			this.setNextPeerHostName(this.Hostname);
+			this.setNextPeerPort(this.Port);
+			this.NextPeerID = this.ID;
 		}
 	}
 	
@@ -286,17 +293,17 @@ public class PeerNode {
 		{
 			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
 			if(firstWordOfMessage.equals(Settings.Version.toUpperCase()))
-			{
 				return this.IDQueryResponseProcess(this.genResponse(message)).toString();
-			}
 			else
-			{
 				return this.IDQueryRequestProcess(this.genRequest(message)).toString();
-			}	
 		}
 		else if(message.contains("NEXT"))
 		{
-			return this.NEXTQueryReuqestProcess(this.genRequest(message)).toString();
+			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
+			if(firstWordOfMessage.equals(Settings.Version.toUpperCase()))
+				return this.NextQueryResponseProcess(this.genResponse(message)).toString();
+			else
+				return this.NEXTQueryReuqestProcess(this.genRequest(message)).toString();
 		}
 		else if(message.contains("PULL"))
 		{
@@ -342,11 +349,11 @@ public class PeerNode {
 		case 301:
 			//interpret first element of the arraylist containing the message to get the information for next hostname and port number
 			String[] msg = response.getMessage().get(0).trim().split("\\s+"); 
-			this.setOtherPeerHostName(msg[0]);
-			this.setOtherPeerPort(msg[1]);
+			this.setNextPeerHostName(msg[0]);
+			this.setNextPeerPort(msg[1]);
 			return this.genRequest("ID", 0, this.getID());
 		case 200:
-			return this.genRequest("NEXT", 0, null);
+			return this.genRequest("NEXT", 0, "0");
 		default:
 			return this.genRequest("ID", 0, this.getID());
 		}
@@ -358,14 +365,33 @@ public class PeerNode {
 	 */
 	public Response IDQueryRequestProcess(Request request){
 		ArrayList<String> responseMessage = new ArrayList<String>();
-		if(getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) < getInt(this.getNextPeerID()))
+		if(getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) > getInt(this.getNextPeerID()))
 		{
-			responseMessage.add(this.getOtherPeerHostName()+" "+this.getOtherPeerPort());
+			responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort());
 			return new Response(Settings.Version, "ID", "1", "301", "redirect", responseMessage);
 		}
-		else{
+		else if(getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) < getInt(this.getNextPeerID()))
+		{
 			return new Response(Settings.Version, "ID", "0", "200", "ok", responseMessage);
 		}
+		else if(this.getID() == this.NextPeerID)
+		{
+			if(getInt(this.getID())>getInt(request.getPeerID())){
+				return new Response(Settings.Version, "ID", "0", "200", "ok", responseMessage);
+			}
+			else
+			{
+				//This condition requires more coding time
+				return NEXTQueryReuqestProcess(request);
+			}
+		}
+		else if(getInt(request.getPeerID()) == getInt(this.getID())){
+			return new Response(Settings.Version, "ID", "0", "400", "peerexist", responseMessage);
+		}
+		else if(!request.getVersion().trim().equals(Settings.Version.trim())){
+			return new Response(Settings.Version, "ID", "0", "401", "versionError", responseMessage);
+		}
+		return new Response(Settings.Version, "ID", "0", "401", "versionError", responseMessage);
 	}
 	
 	/**
@@ -374,8 +400,50 @@ public class PeerNode {
 	 */
 	public Response NEXTQueryReuqestProcess(Request request){
 		ArrayList<String> responseMessage = new ArrayList<String>();
-		responseMessage.add(this.getOtherPeerHostName()+" "+this.getOtherPeerPort()+" "+this.getID());
+		//check to see if either hostname or port doesnt exist, in either case there is an error
+		if(this.getHostname().isEmpty()||this.getPort().isEmpty()){
+			return new Response(Settings.Version, "NEXT", "0", "501", "NoNextExist", responseMessage);
+		}
+		responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort()+" "+this.getID());
 		return new Response(Settings.Version, "NEXT", "1", "200", "ok", responseMessage);
+	}
+	
+	/**
+	 * @param response
+	 * @return
+	 */
+	public Request NextQueryResponseProcess(Response response){
+		switch(Integer.parseInt(response.getResponseCode())){
+		case 200:
+			String[] msg = response.getMessage().get(0).trim().split("\\s+");
+			this.setNextPeerHostName(msg[0]);
+			this.setNextPeerID(msg[1]);
+			this.setNextPeerID(msg[2]);
+			ArrayList<String> message = new ArrayList<String>();
+			message.add(this.getHostname()+" "+this.getPort());
+			return new Request("PULL", Settings.Version, 1, this.getID(), message);
+		case 501:
+			return new Request("NEXT", Settings.Version, 0);
+		}			
+		return new Request();
+	}
+	
+	public Response PullQueryRequestProcess(Request request){
+		String[] msg = request.getMessage().get(0).trim().split("\\s+");
+		this.setNextPeerHostName(msg[0]);
+		this.setNextPeerPort(msg[1]);
+		this.setNextPeerID(request.getPeerID());
+		ArrayList<String> responseMessage = new ArrayList<String>();
+		//responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort()+" "+this.getID());
+		return new Response(Settings.Version, "NEXT", "1", "200", "ok", responseMessage);		
+	}
+
+	public Request PullQueryResponseProcess(Response response){
+		switch(Integer.parseInt(response.getResponseCode())){
+		case 200:
+			return new Request("DONE", Settings.Version, 0);
+		}
+		return new Request();
 	}
 	
 	
@@ -385,29 +453,13 @@ public class PeerNode {
 		tmp.ProcessFileInputArgs(args);
 		//tmp.SendMessage();
 		System.out.println(tmp.Protocol("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF"));
-//		System.out.println(tmp.getOtherPeerHostName());
-//		System.out.println(tmp.getOtherPeerPort());
+//		System.out.println(tmp.getNextPeerHostName());
+//		System.out.println(tmp.getNextPeerPort());
 //		tmp.setNextPeerID("29");
 //
 //		tmp.setID("29");
 //		System.out.println(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
 //		tmp.IDQueryRequestProcess(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
-		
-		
-		
-		ArrayList<String> commands = new ArrayList<String>();
-		commands.add("ID 3171_A3/1.0 0 29CRLF");
-		commands.add("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000CRLF");
-		commands.add("ID 3171_a3/1.0 0 29CRLF");
-		commands.add("3171_a3/1.0 ID 1 301 redirectCRLF hector.cs.dal.ca 1024CRLF");
-		commands.add("ID 3171_a3/1.0 0 29CRLF");
-		commands.add("3171_a3/1.0 ID 0 200 okCRLF");
-		commands.add("NEXT 3171_a3/1.0 0CRLF");
-		commands.add("3171_a3/1.0 NEXT 1 200 okCRLF bluenose.cs.dal.ca 2100 7CRLF");
-		commands.add("PULL 3171_a3/1.0 1 29CRLF newbie.cs.dal.ca 2112CRLF");
-		commands.add("3171_a3/1.0 PULL 2 200 okCRLF jumps over theCRLF lazy dogCRLF");
-		commands.add("DONE 3171_a3/1.0 0CRLF");
-		
 	}
 
 }

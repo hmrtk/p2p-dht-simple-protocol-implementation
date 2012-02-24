@@ -46,7 +46,7 @@ public class Client {
 
         try {
 			System.setProperty("java.net.preferIPv4Stack", "true");
-            kkSocket = new Socket("ubuntu", 4444);
+            kkSocket = new Socket("ubuntu", 2112);
             out = new PrintWriter(kkSocket.getOutputStream(), true);
             in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));
         } catch (UnknownHostException e) {
@@ -61,16 +61,26 @@ public class Client {
         String fromServer;
         String fromUser;
 
-        while ((fromServer = in.readLine()) != null) {
-            System.out.println("Server: " + fromServer);
-            if (fromServer.equals("Bye."))
-                break;
-		    
-            fromUser = stdIn.readLine();
-	    if (fromUser != null) {
-                System.out.println("Client: " + fromUser);
-                out.println(fromUser);
-	    }
+//        while ((fromServer = in.readLine()) != null) {
+//            fromUser = stdIn.readLine();
+//		    if (fromUser != null) {
+//	                System.out.println("Client: " + fromUser);
+//	                out.println(fromUser);
+//		    }
+//        	System.out.println("Server: " + fromServer);
+//            if (fromServer.equals("Bye."))
+//                break;
+//        }
+        while (true) {
+		    if ((fromUser = stdIn.readLine()) != null) {
+	                System.out.println(fromUser);
+	                out.println(fromUser);
+		    }
+		    if((fromServer = in.readLine()) != null){
+	        	System.out.println(fromServer);
+	            if (fromServer.equals("Bye."))
+	                break;
+		    }
         }
 
         out.close();

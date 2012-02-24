@@ -1,4 +1,8 @@
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 /**
  * 
@@ -10,21 +14,18 @@ import java.io.IOException;
  * Last revision: Feb 21, 2012 2:27:17 PM
  */
 public class Main {
-
+    public static void log(String text){
+    	try {
+			//PrintWriter out = new PrintWriter("log.txt");
+    		PrintStream out = new PrintStream(new FileOutputStream("log.txt", true)); 
+			out.println(text);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 	public static void main(String[] args) throws IOException
 	{
-//    	Properties prop = new Properties();
-////    	InputStream url =  Main.class.getClass().getResourceAsStream("/p2p/config.properties");
-////    	prop.load(url);
-//    	prop.load(new FileInputStream("../config.properties"));
-//    	System.out.println(prop.getProperty("version"));
-
-    	
-//		Peer peer = new Peer();
-//		peer.ProcessCommand("kjhkjh -m gholi -i khjkj ");
-		
-        for (String s: args) {
-            System.out.println(s);
-        }
+		log("test");
 	}
 }

@@ -49,33 +49,46 @@ public class ServerThread extends Thread {
     public static String processInput(String s){
     	return s;
     }
+    
+    /**
+     * Logs the input and output of the server
+     * @param text
+     */
+    public static void log(String text){
+    	try {
+			//PrintWriter out = new PrintWriter("log.txt");
+    		PrintStream out = new PrintStream(new FileOutputStream("server.p2plog", true)); 
+			out.println(text);
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     public void run() {
 
-	try {
-	    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-	    BufferedReader in = new BufferedReader(
-				    new InputStreamReader(
-				    socket.getInputStream()));
-
-	    String inputLine, outputLine;
-//	    KnockKnockProtocol kkp = new KnockKnockProtocol();
-//	    outputLine = ServerThread.processInput(null);
-//	    out.println(outputLine);
-
-	    while ((inputLine = in.readLine()) != null) {	
-		System.out.println("[Received] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+inputLine);
-		outputLine = this.peer.Protocol(inputLine).toString();
-		System.out.println("[Sent] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+outputLine);
-		out.println(outputLine);
-		if (outputLine.equals("Bye"))
-		    break;
-	    }
-	    out.close();
-	    in.close();
-	    socket.close();
-
-	} catch (IOException e) {
-	    e.printStackTrace();
-	}
+		try {
+		    PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+		    BufferedReader in = new BufferedReader(
+					    new InputStreamReader(
+					    socket.getInputStream()));
+	
+		    String inputLine, outputLine;
+	
+	
+		    while ((inputLine = in.readLine()) != null) {	
+			log("[Received] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+inputLine);
+			outputLine = this.peer.Protocol(inputLine).toString();
+			log("[Sent] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+outputLine);
+			out.println(outputLine);
+			if (outputLine.equals("Bye"))
+			    break;
+		    }
+		    out.close();
+		    in.close();
+		    socket.close();
+	
+		} catch (IOException e) {
+		    e.printStackTrace();
+		}
     }
 }

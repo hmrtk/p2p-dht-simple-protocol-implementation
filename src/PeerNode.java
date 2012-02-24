@@ -1,3 +1,9 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import org.omg.CORBA.VersionSpecHelper;
@@ -16,6 +22,8 @@ public class PeerNode {
 	private String Hostname;
 	private String NextPeerHostName;
 	private String NextPeerPort;
+	private String RedirectHostName;
+	private String RedirectPort;
 	private ArrayList<StringHash> StringHashArraylist;
 	private int MaxId;
 	private boolean firstPeer = false;
@@ -146,6 +154,34 @@ public class PeerNode {
 		this.NextPeerPort = NextPeerPort;
 	}
 	
+	/**
+	 * @return the redirectHostName
+	 */
+	public String getRedirectHostName() {
+		return RedirectHostName;
+	}
+
+	/**
+	 * @param redirectHostName the redirectHostName to set
+	 */
+	public void setRedirectHostName(String redirectHostName) {
+		RedirectHostName = redirectHostName;
+	}
+
+	/**
+	 * @return the redirectPort
+	 */
+	public String getRedirectPort() {
+		return RedirectPort;
+	}
+
+	/**
+	 * @param redirectPort the redirectPort to set
+	 */
+	public void setRedirectPort(String redirectPort) {
+		RedirectPort = redirectPort;
+	}
+
 	public String toString(){
 		return "Hostname: "+this.Hostname+" Port: "+this.Port+" ID: "+this.ID+" NextHostname: "+this.NextPeerHostName+" NextPort: "+
 			this.NextPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer;
@@ -253,11 +289,11 @@ public class PeerNode {
 				}
 				else if(strValue.trim().toUpperCase().equals("-R")){
 //					System.out.println("-r "+ ArrayCommand[counter+1]); 
-					this.setNextPeerHostName(ArrayCommand[counter+1]);
+					this.setRedirectHostName(ArrayCommand[counter+1]);
 				}
 				else if(strValue.trim().toUpperCase().equals("-S")){
 //					System.out.println("-s "+ ArrayCommand[counter+1]); 
-					this.setNextPeerPort(ArrayCommand[counter+1]);
+					this.setRedirectPort(ArrayCommand[counter+1]);
 				}
 			}
 			else if(strValue.trim().toUpperCase().equals("-F"))
@@ -349,8 +385,8 @@ public class PeerNode {
 		case 301:
 			//interpret first element of the arraylist containing the message to get the information for next hostname and port number
 			String[] msg = response.getMessage().get(0).trim().split("\\s+"); 
-			this.setNextPeerHostName(msg[0]);
-			this.setNextPeerPort(msg[1]);
+			this.setRedirectHostName(msg[0]);
+			this.setRedirectPort(msg[1]);
 			return this.genRequest("ID", 0, this.getID());
 		case 200:
 			return this.genRequest("NEXT", 0, "0");
@@ -446,7 +482,75 @@ public class PeerNode {
 		return new Request();
 	}
 	
-	
+    public void client(String hostname, int port, String command) throws IOException {
+
+        Socket kkSocket = null;
+        PrintWriter out = null;
+        BufferedReader in = null;
+
+        try {
+			System.setProperty("java.net.preferIPv4Stack", "true");
+            kkSocket = new Socket(hostname, port);
+            out = new PrintWriter(kkSocket.getOutputStream(), true);
+            in = new BufferedReader(new InputStreamReader(kkSocket.getInputStream()));
+        } catch (UnknownHostException e) {
+            System.err.println("Don't know about host: taranis.");
+            System.exit(1);
+        } catch (IOException e) {
+            System.err.println("Couldn't get I/O for the connection to: taranis.");
+            System.exit(1);
+        }
+
+        BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
+        String fromServer;
+        String fromUser;
+
+//        while (true) {
+//		    if ((fromUser = stdIn.readLine()) != null) {
+//	                System.out.println(fromUser);
+//	                out.println(fromUser);
+//		    }
+//		    if((fromServer = in.readLine()) != null){
+//	        	System.out.println(fromServer);
+//	            if (fromServer.equals("Bye."))
+//	                break;
+//		    }
+//        }
+        
+        out.println(command);
+        while ((fromServer = in.readLine()) != null) {
+		    if((fromServer = in.readLine()) != null){
+		    	// process the message received from server in through the protocol method
+		    	String clientMsg = this.Protocol(fromServer);
+		    	if(!clientMsg.trim().isEmpty())
+		    		//pass the message to the server for processing
+		    		out.println(clientMsg);
+	            if (fromServer.equals("Bye."))
+	                break;
+		    }
+        }
+        out.close();
+        in.close();
+        stdIn.close();
+        kkSocket.close();
+    }
+    
+    public void run(){
+    	//Generate Client request if and only if its not the first peer in
+    	if(!isFirstPeer()){
+        	// Starting the program by asking the other hostname and port that is set through the arguments using ID Query
+        	String StartReuqest = this.genRequest("ID", 0, this.getID()).toString();
+        	try {
+    			this.client(this.getRedirectHostName(), Integer.parseInt(getRedirectPort()), StartReuqest);
+    		} catch (NumberFormatException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		} catch (IOException e) {
+    			// TODO Auto-generated catch block
+    			e.printStackTrace();
+    		}    		
+    	}
+    }
 	public static void main(String[] args) 
 	{
 		PeerNode tmp = new PeerNode();

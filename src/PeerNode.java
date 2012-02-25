@@ -294,27 +294,21 @@ public class PeerNode {
 			if(ArrayCommand.length>counter+1){
 				
 				if(strValue.trim().toUpperCase().equals("-I")){
-//					System.out.println("-i "+ ArrayCommand[counter+1]);
 					this.setID(ArrayCommand[counter+1]);
 				}
 				else if(strValue.trim().toUpperCase().equals("-H") ){
-//					System.out.println("-h "+ ArrayCommand[counter+1]); 
 					this.setHostname(ArrayCommand[counter+1]);
 				}
 				else if(strValue.trim().toUpperCase().equals("-P")){
-//					System.out.println("-p "+ ArrayCommand[counter+1]); 
 					this.setPort(ArrayCommand[counter+1]);
 				}
 				else if(strValue.trim().toUpperCase().equals("-M")){
-//					System.out.println("-m "+ ArrayCommand[counter+1]); 
 					this.setMaxId(Integer.parseInt(ArrayCommand[counter+1]));
 				}
 				else if(strValue.trim().toUpperCase().equals("-R")){
-//					System.out.println("-r "+ ArrayCommand[counter+1]); 
 					this.setRedirectHostName(ArrayCommand[counter+1]);
 				}
 				else if(strValue.trim().toUpperCase().equals("-S")){
-//					System.out.println("-s "+ ArrayCommand[counter+1]); 
 					this.setRedirectPort(ArrayCommand[counter+1]);
 				}
 			}
@@ -332,18 +326,7 @@ public class PeerNode {
 	}
 	
 	/**
-	 * 
-	 */
-	public void SendMessage(){
-		if(this.isFirstPeer()){
-			
-		}
-		else{
-			System.out.println( this.genRequest("ID", 0, this.getID()));
-		}
-	}
-
-	/**
+	 * Protocol processes messages being received and sent in the applciation
 	 * @param message
 	 */
 	public String Protocol(String message){
@@ -379,10 +362,6 @@ public class PeerNode {
 			else
 				return this.AddQueryRequestProcess(this.genRequest(message)).toString();
 		}
-		else if(message.contains("DELETE"))
-		{
-			
-		}
 		else if(message.contains("QUERY"))
 		{
 			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
@@ -396,8 +375,6 @@ public class PeerNode {
 			 return this.toString();
 		}
 		return "";
-//		System.out.println(this.genResponse(message));
-//		System.out.println(this.IDQueryResponseProcess(this.genResponse(message)));
 	}
 
 	/**
@@ -421,7 +398,8 @@ public class PeerNode {
 		}
 	}
 	
-	/** Client connect to the nexthostname and next port number set in the class
+	/** 
+	 * Client connect to the nexthostname and next port number set in the class
 	 * @param message
 	 */
 	public void nextClient(String message){
@@ -433,6 +411,7 @@ public class PeerNode {
 		}
 	}
 	/**
+	 * Processes an ID query response
 	 * @param response
 	 * @return
 	 */
@@ -455,6 +434,7 @@ public class PeerNode {
 	}
 
 	/**
+	 * Processes an ID query request
 	 * @param request
 	 * @return
 	 */
@@ -494,6 +474,7 @@ public class PeerNode {
 	}
 	
 	/**
+	 * Process Next query request
 	 * @param request
 	 * @return
 	 */
@@ -508,6 +489,7 @@ public class PeerNode {
 	}
 	
 	/**
+	 * Process Next query response
 	 * @param response
 	 * @return
 	 */
@@ -529,6 +511,11 @@ public class PeerNode {
 		return new Request();
 	}
 	
+	/**
+	 * Process Pull query request
+	 * @param request
+	 * @return
+	 */
 	public Response PullQueryRequestProcess(Request request){
 		String[] msg = request.getMessage().get(0).trim().split("\\s+");
 		this.setNextPeerHostName(msg[0]);
@@ -539,6 +526,11 @@ public class PeerNode {
 		return new Response(Settings.Version, "PULL", "1", "200", "ok", responseMessage);		
 	}
 
+	/**
+	 * Process pull query response
+	 * @param response
+	 * @return
+	 */
 	public Request PullQueryResponseProcess(Response response){
 		switch(Integer.parseInt(response.getResponseCode())){
 		case 200:
@@ -549,6 +541,8 @@ public class PeerNode {
 	}
 	
     /**
+     * Get Ascii value
+     * 
      * @param s
      * @return
      */
@@ -560,6 +554,7 @@ public class PeerNode {
     }
     
     /**
+     * Process Add query request
      * @param request
      * @return
      */
@@ -587,18 +582,19 @@ public class PeerNode {
     }
     
     /**
+     * Process Add query response
      * @param response
      * @return
      */
     public Request AddQueryResponseProcess(Response response){
-//		switch(Integer.parseInt(response.getResponseCode())){
-//		case 400:
-//			nextClient(new Request("ADD", Settings.Version, 0,this.getID(),response.getMessage()).toString());
-//			return new Request("DONE", Settings.Version, 0);
-//		}
 		return new Request("DONE", Settings.Version, 0);
     }
 
+    /**
+     * Process Query request
+     * @param request
+     * @return
+     */
     public Response QueryRequestProcess(Request request){
     	ArrayList<String> responseMessage = new ArrayList<String>();
     	String msg = request.getMessage().get(0).trim();
@@ -619,15 +615,23 @@ public class PeerNode {
     	}
     	
     }
+    
+    /**
+     * Process query response
+     * @param response
+     * @return
+     */
     public Request QueryResponseProcess(Response response){
-//		switch(Integer.parseInt(response.getResponseCode())){
-//		case 400:
-//			nextClient(new Request("ADD", Settings.Version, 0,this.getID(),response.getMessage()).toString());
-//			return new Request("DONE", Settings.Version, 0);
-//		}
 		return new Request("DONE", Settings.Version, 0);
     }
     
+    /**
+     * Client - open a socket to the host name and port provided and send the command
+     * @param hostname
+     * @param port
+     * @param command
+     * @throws IOException
+     */
     public void client(String hostname, int port, String command) throws IOException {
 
         Socket kkSocket = null;
@@ -651,18 +655,6 @@ public class PeerNode {
         String fromServer;
 
         out.println(command);
-//        while ((fromServer = in.readLine()) != null) {
-//	    	// process the message received from server in through the protocol method
-//	    	clientMsg = this.Protocol(fromServer);
-//	    	if(fromServer.toUpperCase().contains("REDIRECT"))
-//	    		break;
-//	    	if(!clientMsg.trim().isEmpty())
-//	    		//pass the message to the server for processing
-//	    		out.println(clientMsg);
-//            if (fromServer.equals("Bye."))
-//                break;
-//            System.out.println(this.toString());
-//        }
         if ((fromServer = in.readLine()) != null) {
 	    	// process the message received from server in through the protocol method
 	    	this.Protocol(fromServer);
@@ -674,6 +666,9 @@ public class PeerNode {
         kkSocket.close();
     }
     
+    /**
+     * This the first method called from peer for searching for next Peer if its not firt peer
+     */
     public void run(){
     	//Generate Client request if and only if its not the first peer in
     	if(!isFirstPeer()){
@@ -687,30 +682,5 @@ public class PeerNode {
     		}    		
     	}
     }
-//	public static void main(String[] args) 
-//	{
-////		PeerNode tmp = new PeerNode();
-//////		tmp.ProcessFileInputArgs(args);
-////		//tmp.SendMessage();
-////
-//////		System.out.println(tmp.getNextPeerHostName());
-//////		System.out.println(tmp.getNextPeerPort());
-////		tmp.setID("5");
-////		tmp.setHostname("ubuntu");
-////		tmp.setPort("2114");
-////		tmp.setMaxId(32);
-////		tmp.setRedirectHostName("ubuntu");
-////		tmp.setRedirectPort("2112");
-////		
-////		tmp.setNextPeerID("29");
-////		System.out.println(tmp.Protocol("ADD 3171_a3/1.0 1CRLFWhat time is it?CRLF"));
-//		System.out.println(PeerNode.getAscii("blah blah blah")%32);
-////		tmp.run();
-////
-////		tmp.setID("29");
-////		System.out.println(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
-////		tmp.IDQueryRequestProcess(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
-//	}
-
 }
 

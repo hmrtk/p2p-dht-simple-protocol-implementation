@@ -24,8 +24,15 @@ public class Main {
 			e.printStackTrace();
 		}
     }
+    public static int getAscii(String s){
+    	int result = 0;
+    	for (int i=0; i<s.length();i++)
+    		result +=(int)s.charAt(i);
+    	return result;
+    }
 	public static void main(String[] args) throws IOException
 	{
-		log("test");
+//		log("test");
+		System.out.println(getAscii("hahaha")%32);
 	}
 }

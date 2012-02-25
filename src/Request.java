@@ -32,6 +32,12 @@ public class Request {
 		this.peerID = peerID;
 		this.message = new ArrayList<String>();
 	}
+	public Request(String operation, String version, int numOfLines, ArrayList<String> responseMessage){
+		this.operation = operation;
+		this.version = version;
+		this.numOfLines = numOfLines;
+		this.message = responseMessage;
+	}
 	public Request(String operation, String version, int numOfLines, String peerID, ArrayList<String> responseMessage){
 		this.operation = operation;
 		this.version = version;
@@ -115,8 +121,12 @@ public class Request {
 			for(String str : message){
 				msgOutput +=str+"CRLF"; 
 			}
-			return this.getOperation()+" "+this.getVersion()+" "+this.getNumOfLines()+" "+this.getPeerID()+"CRLF"
-					+msgOutput;
+			if(this.getPeerID()!=null)
+				return this.getOperation()+" "+this.getVersion()+" "+this.getNumOfLines()+" "+this.getPeerID()+"CRLF"
+						+msgOutput;
+			else
+				return this.getOperation()+" "+this.getVersion()+" "+this.getNumOfLines()+"CRLF"
+				+msgOutput;
 		}
 		else if(this.getPeerID()==null)
 		{

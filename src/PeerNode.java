@@ -5,8 +5,7 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-
-import org.omg.CORBA.VersionSpecHelper;
+import java.util.Hashtable;
 
 
 /**
@@ -27,8 +26,11 @@ public class PeerNode {
 	private ArrayList<StringHash> StringHashArraylist;
 	private int MaxId;
 	private boolean firstPeer = false;
+	private Hashtable<Integer, String> hashtable;
 	
-	
+	public PeerNode(){
+		this.hashtable = new Hashtable<Integer, String>();
+	}
 	/**
 	 * @return the iD
 	 */
@@ -182,9 +184,23 @@ public class PeerNode {
 		RedirectPort = redirectPort;
 	}
 
+	/**
+	 * @return the hashtable
+	 */
+	public Hashtable<Integer, String> getHashtable() {
+		return hashtable;
+	}
+
+	/**
+	 * @param hashtable the hashtable to set
+	 */
+	public void setHashtable(Hashtable<Integer, String> hashtable) {
+		this.hashtable = hashtable;
+	}
+
 	public String toString(){
 		return "Hostname: "+this.Hostname+" Port: "+this.Port+" ID: "+this.ID+" NextHostname: "+this.NextPeerHostName+" NextPort: "+
-			this.NextPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer;
+			this.NextPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer+" Hashtable: "+this.getHashtable().toString();
 	}
 
 	/**
@@ -221,10 +237,16 @@ public class PeerNode {
 				Message.add(strValue);
 			}
 		}
-		if(peerID==null){
+		if(peerID==null & Message.size()==0){
 			return new Request(operation, version, numOfLines);
+		}else if(peerID==null & Message.size()>0)
+		{
+			return new Request(operation, version, numOfLines, Message);
 		}
-		return new Request(operation, version, numOfLines, peerID, Message);
+		else
+		{
+			return new Request(operation, version, numOfLines, peerID, Message);
+		}
 	}	
 	/**
 	 * Generates a Response object
@@ -351,7 +373,11 @@ public class PeerNode {
 		}
 		else if(message.contains("ADD"))
 		{
-			
+			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
+			if(firstWordOfMessage.equals(Settings.Version.toUpperCase()))
+				return this.AddQueryResponseProcess(this.genResponse(message)).toString();
+			else
+				return this.AddQueryRequestProcess(this.genRequest(message)).toString();
 		}
 		else if(message.contains("DELETE"))
 		{
@@ -359,9 +385,11 @@ public class PeerNode {
 		}
 		else if(message.contains("QUERY"))
 		{
-			
-		}
-		else if(message.contains("DONE")){
+			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
+			if(firstWordOfMessage.equals(Settings.Version.toUpperCase()))
+				return this.QueryResponseProcess(this.genResponse(message)).toString();
+			else
+				return this.QueryRequestProcess(this.genRequest(message)).toString();
 			
 		}
 		else if(message.contains("info")){
@@ -380,9 +408,25 @@ public class PeerNode {
 		return Integer.parseInt(s);
 	}
 	
-	public void startClient(String message){
+	/**
+	 * Client connect to the redirect hostname and port number used mostly in the ID command
+	 * @param message
+	 */
+	public void redirectClient(String message){
 		try {
 			this.client(this.getRedirectHostName(), getInt(this.getRedirectPort()), message);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/** Client connect to the nexthostname and next port number set in the class
+	 * @param message
+	 */
+	public void nextClient(String message){
+		try {
+			this.client(this.getNextPeerHostName(), getInt(this.getNextPeerPort()), message);
 		}
 		catch (IOException e) {
 			e.printStackTrace();
@@ -399,13 +443,13 @@ public class PeerNode {
 			String[] msg = response.getMessage().get(0).trim().split("\\s+"); 
 			this.setRedirectHostName(msg[0]);
 			this.setRedirectPort(msg[1]);
-			startClient(this.genRequest("ID", 0, this.getID()).toString());
+			redirectClient(this.genRequest("ID", 0, this.getID()).toString());
 			return this.genRequest("ID", 0, this.getID());
 		case 200:
-			startClient(this.genRequest("NEXT", 0, "0").toString());
+			redirectClient(this.genRequest("NEXT", 0, "0").toString());
 			return this.genRequest("NEXT", 0, "0");
 		default:
-			startClient(this.genRequest("ID", 0, this.getID()).toString());
+			redirectClient(this.genRequest("ID", 0, this.getID()).toString());
 			return this.genRequest("ID", 0, this.getID());
 		}
 	}
@@ -476,10 +520,10 @@ public class PeerNode {
 			this.setNextPeerID(msg[2]);
 			ArrayList<String> message = new ArrayList<String>();
 			message.add(this.getHostname()+" "+this.getPort());
-			startClient(new Request("PULL", Settings.Version, 1, this.getID(), message).toString());
+			redirectClient(new Request("PULL", Settings.Version, 1, this.getID(), message).toString());
 			return new Request("PULL", Settings.Version, 1, this.getID(), message);
 		case 501:
-			startClient(new Request("NEXT", Settings.Version, 0).toString());
+			redirectClient(new Request("NEXT", Settings.Version, 0).toString());
 			return new Request("NEXT", Settings.Version, 0);
 		}			
 		return new Request();
@@ -498,12 +542,92 @@ public class PeerNode {
 	public Request PullQueryResponseProcess(Response response){
 		switch(Integer.parseInt(response.getResponseCode())){
 		case 200:
-			startClient(new Request("DONE", Settings.Version, 0).toString());
+			redirectClient(new Request("DONE", Settings.Version, 0).toString());
 			return new Request("DONE", Settings.Version, 0);
 		}
 		return new Request();
 	}
 	
+    /**
+     * @param s
+     * @return
+     */
+    public static int getAscii(String s){
+    	int result = 0;
+    	for (int i=0; i<s.length();i++)
+    		result +=(int)s.charAt(i);
+    	return result;
+    }
+    
+    /**
+     * @param request
+     * @return
+     */
+    public Response AddQueryRequestProcess(Request request){
+    	ArrayList<String> responseMessage = new ArrayList<String>();
+    	String msg = request.getMessage().get(0).trim();
+    	int key = PeerNode.getAscii(msg) % this.getMaxId(); //get the Ascii value and convert it to the range of ids by modula maxId
+    	Hashtable<Integer, String> hashtbl = this.getHashtable();
+    	if(hashtbl.containsValue(msg)){
+    		return new Response(Settings.Version, "ADD", "0", "202", "duplicate", responseMessage);
+    	}
+    	else if(getInt(this.getID()) <= key && key<getInt(this.getNextPeerID()) || 
+    			getInt(this.getID()) <= key && getInt(this.getID()) >getInt(this.getNextPeerID()) ||
+				getInt(this.getNextPeerID()) > key && getInt(this.getID()) >getInt(this.getNextPeerID()))
+    	{
+    		hashtbl.put(key, msg);
+    		return new Response(Settings.Version, "ADD", "0", "200", "ok", responseMessage);
+    	}
+    	else{
+    		responseMessage.add(msg);
+    		nextClient(new Request("ADD", Settings.Version, 0,this.getID(),responseMessage).toString());
+    		return new Response(Settings.Version, "ADD", "0", "400", "NotResponsible", responseMessage);
+    	}
+    	
+    }
+    
+    /**
+     * @param response
+     * @return
+     */
+    public Request AddQueryResponseProcess(Response response){
+//		switch(Integer.parseInt(response.getResponseCode())){
+//		case 400:
+//			nextClient(new Request("ADD", Settings.Version, 0,this.getID(),response.getMessage()).toString());
+//			return new Request("DONE", Settings.Version, 0);
+//		}
+		return new Request("DONE", Settings.Version, 0);
+    }
+
+    public Response QueryRequestProcess(Request request){
+    	ArrayList<String> responseMessage = new ArrayList<String>();
+    	String msg = request.getMessage().get(0).trim();
+    	int key = PeerNode.getAscii(msg) % this.getMaxId();
+    	Hashtable<Integer, String> hashtbl = this.getHashtable();
+    	if(hashtbl.containsValue(msg)){
+    		return new Response(Settings.Version, "QUERY", "0", "200", "OK", responseMessage);
+    	}
+    	else if(getInt(this.getID()) <= key && key<getInt(this.getNextPeerID()) || 
+    			getInt(this.getID()) <= key && getInt(this.getID()) >getInt(this.getNextPeerID()) ||
+				getInt(this.getNextPeerID()) > key && getInt(this.getID()) >getInt(this.getNextPeerID()))
+    	{
+    		return new Response(Settings.Version, "ADD", "0", "201", "NotPresent", responseMessage);
+    	}
+    	else{
+    		responseMessage.add(msg);
+    		return new Response(Settings.Version, "ADD", "0", "400", "NotResponsible", responseMessage);
+    	}
+    	
+    }
+    public Request QueryResponseProcess(Response response){
+//		switch(Integer.parseInt(response.getResponseCode())){
+//		case 400:
+//			nextClient(new Request("ADD", Settings.Version, 0,this.getID(),response.getMessage()).toString());
+//			return new Request("DONE", Settings.Version, 0);
+//		}
+		return new Request("DONE", Settings.Version, 0);
+    }
+    
     public void client(String hostname, int port, String command) throws IOException {
 
         Socket kkSocket = null;
@@ -556,10 +680,6 @@ public class PeerNode {
         	// Starting the program by asking the other hostname and port that is set through the arguments using ID Query
         	String StartReuqest = this.genRequest("ID", 0, this.getID()).toString();
         	try {
-//        		while(true){
-//        			//enabling the method to call the client method as many times as required for situations like Redirect
-//        			StartReuqest = this.client(this.getRedirectHostName(), Integer.parseInt(getRedirectPort()), StartReuqest);
-//        		}
         		this.client(this.getRedirectHostName(), Integer.parseInt(getRedirectPort()), StartReuqest);
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
@@ -570,11 +690,11 @@ public class PeerNode {
 //	public static void main(String[] args) 
 //	{
 ////		PeerNode tmp = new PeerNode();
-////		tmp.ProcessFileInputArgs(args);
-//		//tmp.SendMessage();
-////		System.out.println(tmp.Protocol("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF"));
-////		System.out.println(tmp.getNextPeerHostName());
-////		System.out.println(tmp.getNextPeerPort());
+//////		tmp.ProcessFileInputArgs(args);
+////		//tmp.SendMessage();
+////
+//////		System.out.println(tmp.getNextPeerHostName());
+//////		System.out.println(tmp.getNextPeerPort());
 ////		tmp.setID("5");
 ////		tmp.setHostname("ubuntu");
 ////		tmp.setPort("2114");
@@ -583,6 +703,8 @@ public class PeerNode {
 ////		tmp.setRedirectPort("2112");
 ////		
 ////		tmp.setNextPeerID("29");
+////		System.out.println(tmp.Protocol("ADD 3171_a3/1.0 1CRLFWhat time is it?CRLF"));
+//		System.out.println(PeerNode.getAscii("blah blah blah")%32);
 ////		tmp.run();
 ////
 ////		tmp.setID("29");

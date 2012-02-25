@@ -56,7 +56,6 @@ public class ServerThread extends Thread {
      */
     public static void log(String text){
     	try {
-			//PrintWriter out = new PrintWriter("log.txt");
     		PrintStream out = new PrintStream(new FileOutputStream("server.p2plog", true)); 
 			out.println(text);
 		} catch (FileNotFoundException e) {
@@ -64,6 +63,7 @@ public class ServerThread extends Thread {
 			e.printStackTrace();
 		}
     }
+    
     public void run() {
 
 		try {
@@ -74,14 +74,15 @@ public class ServerThread extends Thread {
 	
 		    String inputLine, outputLine;
 	
-	
+		    log("----------------> peer "+peer.getID()+" server loging <----------------");
 		    while ((inputLine = in.readLine()) != null) {	
-			log("[Received] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+inputLine);
-			outputLine = this.peer.Protocol(inputLine).toString();
-			log("[Sent] "+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+" MSG: "+outputLine);
-			out.println(outputLine);
-			if (outputLine.equals("Bye"))
-			    break;
+				log("[Received -"+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+"] "+inputLine);
+				outputLine = this.peer.Protocol(inputLine).toString();
+				log("[Sent -"+" PeerID: "+peer.getID()+" Portnum: "+peer.getPort()+"]     "+outputLine);
+				out.println(outputLine);
+				if (outputLine.equals("Bye"))
+				    break;
+				System.out.println(peer.toString());
 		    }
 		    out.close();
 		    in.close();

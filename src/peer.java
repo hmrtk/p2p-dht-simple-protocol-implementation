@@ -8,9 +8,11 @@ public class peer {
         // creating an instance of peernode object
         PeerNode peer = new PeerNode();
         peer.ProcessFileInputArgs(args);
+        peer.run();
         
         try {
             serverSocket = new ServerSocket(Integer.parseInt(peer.getPort()));
+			System.out.println("Server "+peer.getID()+" Started!");
         } catch (IOException e) {
             System.err.println("Could not listen on port: "+Integer.parseInt(peer.getPort()));
             System.exit(-1);

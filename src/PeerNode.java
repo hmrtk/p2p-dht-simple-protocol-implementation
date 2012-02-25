@@ -343,7 +343,11 @@ public class PeerNode {
 		}
 		else if(message.contains("PULL"))
 		{
-			
+			String firstWordOfMessage = message.toUpperCase().trim().split("\\s+")[0];
+			if(firstWordOfMessage.equals(Settings.Version.toUpperCase()))
+				return this.PullQueryResponseProcess(this.genResponse(message)).toString();
+			else
+				return this.PullQueryRequestProcess(this.genRequest(message)).toString();
 		}
 		else if(message.contains("ADD"))
 		{
@@ -376,6 +380,14 @@ public class PeerNode {
 		return Integer.parseInt(s);
 	}
 	
+	public void startClient(String message){
+		try {
+			this.client(this.getRedirectHostName(), getInt(this.getRedirectPort()), message);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * @param response
 	 * @return
@@ -387,10 +399,13 @@ public class PeerNode {
 			String[] msg = response.getMessage().get(0).trim().split("\\s+"); 
 			this.setRedirectHostName(msg[0]);
 			this.setRedirectPort(msg[1]);
+			startClient(this.genRequest("ID", 0, this.getID()).toString());
 			return this.genRequest("ID", 0, this.getID());
 		case 200:
+			startClient(this.genRequest("NEXT", 0, "0").toString());
 			return this.genRequest("NEXT", 0, "0");
 		default:
+			startClient(this.genRequest("ID", 0, this.getID()).toString());
 			return this.genRequest("ID", 0, this.getID());
 		}
 	}
@@ -401,12 +416,13 @@ public class PeerNode {
 	 */
 	public Response IDQueryRequestProcess(Request request){
 		ArrayList<String> responseMessage = new ArrayList<String>();
-		if(getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) > getInt(this.getNextPeerID()))
+		if(getInt(this.getID())<getInt(this.NextPeerID) && getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) > getInt(this.getNextPeerID()))
 		{
 			responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort());
 			return new Response(Settings.Version, "ID", "1", "301", "redirect", responseMessage);
 		}
-		else if(getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) < getInt(this.getNextPeerID()))
+		else if(getInt(request.getPeerID()) > getInt(this.getID()) && getInt(request.getPeerID()) < getInt(this.getNextPeerID()) || 
+				getInt(this.getID())>getInt(this.NextPeerID) && getInt(request.getPeerID()) > getInt(this.getID()))
 		{
 			return new Response(Settings.Version, "ID", "0", "200", "ok", responseMessage);
 		}
@@ -427,7 +443,10 @@ public class PeerNode {
 		else if(!request.getVersion().trim().equals(Settings.Version.trim())){
 			return new Response(Settings.Version, "ID", "0", "401", "versionError", responseMessage);
 		}
-		return new Response(Settings.Version, "ID", "0", "401", "versionError", responseMessage);
+		else
+		{
+			return new Response(Settings.Version, "ID", "0", "503", "UnknownCondition", responseMessage);
+		}
 	}
 	
 	/**
@@ -440,7 +459,7 @@ public class PeerNode {
 		if(this.getHostname().isEmpty()||this.getPort().isEmpty()){
 			return new Response(Settings.Version, "NEXT", "0", "501", "NoNextExist", responseMessage);
 		}
-		responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort()+" "+this.getID());
+		responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort()+" "+this.getNextPeerID());
 		return new Response(Settings.Version, "NEXT", "1", "200", "ok", responseMessage);
 	}
 	
@@ -453,12 +472,14 @@ public class PeerNode {
 		case 200:
 			String[] msg = response.getMessage().get(0).trim().split("\\s+");
 			this.setNextPeerHostName(msg[0]);
-			this.setNextPeerID(msg[1]);
+			this.setNextPeerPort(msg[1]);
 			this.setNextPeerID(msg[2]);
 			ArrayList<String> message = new ArrayList<String>();
 			message.add(this.getHostname()+" "+this.getPort());
+			startClient(new Request("PULL", Settings.Version, 1, this.getID(), message).toString());
 			return new Request("PULL", Settings.Version, 1, this.getID(), message);
 		case 501:
+			startClient(new Request("NEXT", Settings.Version, 0).toString());
 			return new Request("NEXT", Settings.Version, 0);
 		}			
 		return new Request();
@@ -470,13 +491,14 @@ public class PeerNode {
 		this.setNextPeerPort(msg[1]);
 		this.setNextPeerID(request.getPeerID());
 		ArrayList<String> responseMessage = new ArrayList<String>();
-		//responseMessage.add(this.getNextPeerHostName()+" "+this.getNextPeerPort()+" "+this.getID());
-		return new Response(Settings.Version, "NEXT", "1", "200", "ok", responseMessage);		
+		responseMessage.add("blah");
+		return new Response(Settings.Version, "PULL", "1", "200", "ok", responseMessage);		
 	}
 
 	public Request PullQueryResponseProcess(Response response){
 		switch(Integer.parseInt(response.getResponseCode())){
 		case 200:
+			startClient(new Request("DONE", Settings.Version, 0).toString());
 			return new Request("DONE", Settings.Version, 0);
 		}
 		return new Request();
@@ -503,31 +525,24 @@ public class PeerNode {
 
         BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in));
         String fromServer;
-        String fromUser;
 
-//        while (true) {
-//		    if ((fromUser = stdIn.readLine()) != null) {
-//	                System.out.println(fromUser);
-//	                out.println(fromUser);
-//		    }
-//		    if((fromServer = in.readLine()) != null){
-//	        	System.out.println(fromServer);
-//	            if (fromServer.equals("Bye."))
-//	                break;
-//		    }
-//        }
-        
         out.println(command);
-        while ((fromServer = in.readLine()) != null) {
-		    if((fromServer = in.readLine()) != null){
-		    	// process the message received from server in through the protocol method
-		    	String clientMsg = this.Protocol(fromServer);
-		    	if(!clientMsg.trim().isEmpty())
-		    		//pass the message to the server for processing
-		    		out.println(clientMsg);
-	            if (fromServer.equals("Bye."))
-	                break;
-		    }
+//        while ((fromServer = in.readLine()) != null) {
+//	    	// process the message received from server in through the protocol method
+//	    	clientMsg = this.Protocol(fromServer);
+//	    	if(fromServer.toUpperCase().contains("REDIRECT"))
+//	    		break;
+//	    	if(!clientMsg.trim().isEmpty())
+//	    		//pass the message to the server for processing
+//	    		out.println(clientMsg);
+//            if (fromServer.equals("Bye."))
+//                break;
+//            System.out.println(this.toString());
+//        }
+        if ((fromServer = in.readLine()) != null) {
+	    	// process the message received from server in through the protocol method
+	    	this.Protocol(fromServer);
+            System.out.println(this.toString());
         }
         out.close();
         in.close();
@@ -541,30 +556,39 @@ public class PeerNode {
         	// Starting the program by asking the other hostname and port that is set through the arguments using ID Query
         	String StartReuqest = this.genRequest("ID", 0, this.getID()).toString();
         	try {
-    			this.client(this.getRedirectHostName(), Integer.parseInt(getRedirectPort()), StartReuqest);
-    		} catch (NumberFormatException e) {
-    			// TODO Auto-generated catch block
-    			e.printStackTrace();
+//        		while(true){
+//        			//enabling the method to call the client method as many times as required for situations like Redirect
+//        			StartReuqest = this.client(this.getRedirectHostName(), Integer.parseInt(getRedirectPort()), StartReuqest);
+//        		}
+        		this.client(this.getRedirectHostName(), Integer.parseInt(getRedirectPort()), StartReuqest);
     		} catch (IOException e) {
     			// TODO Auto-generated catch block
     			e.printStackTrace();
     		}    		
     	}
     }
-	public static void main(String[] args) 
-	{
-		PeerNode tmp = new PeerNode();
-		tmp.ProcessFileInputArgs(args);
-		//tmp.SendMessage();
-		System.out.println(tmp.Protocol("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF"));
-//		System.out.println(tmp.getNextPeerHostName());
-//		System.out.println(tmp.getNextPeerPort());
-//		tmp.setNextPeerID("29");
-//
-//		tmp.setID("29");
-//		System.out.println(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
-//		tmp.IDQueryRequestProcess(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
-	}
+//	public static void main(String[] args) 
+//	{
+////		PeerNode tmp = new PeerNode();
+////		tmp.ProcessFileInputArgs(args);
+//		//tmp.SendMessage();
+////		System.out.println(tmp.Protocol("3171_a3/1.0 ID 1 301 redirectCRLF reddwarf.cs.dal.ca 3000 CRLF"));
+////		System.out.println(tmp.getNextPeerHostName());
+////		System.out.println(tmp.getNextPeerPort());
+////		tmp.setID("5");
+////		tmp.setHostname("ubuntu");
+////		tmp.setPort("2114");
+////		tmp.setMaxId(32);
+////		tmp.setRedirectHostName("ubuntu");
+////		tmp.setRedirectPort("2112");
+////		
+////		tmp.setNextPeerID("29");
+////		tmp.run();
+////
+////		tmp.setID("29");
+////		System.out.println(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
+////		tmp.IDQueryRequestProcess(tmp.genRequest("ID 3171_A3/1.0 0 29CRLF"));
+//	}
 
 }
 

@@ -23,7 +23,6 @@ public class PeerNode {
 	private String NextPeerPort;
 	private String RedirectHostName;
 	private String RedirectPort;
-	private ArrayList<StringHash> StringHashArraylist;
 	private int MaxId;
 	private boolean firstPeer = false;
 	private Hashtable<Integer, String> hashtable;
@@ -74,19 +73,6 @@ public class PeerNode {
 		MaxId = maxId;
 	}
 
-	/**
-	 * @return the stringHashArraylist
-	 */
-	public ArrayList<StringHash> getStringHashArraylist() {
-		return StringHashArraylist;
-	}
-
-	/**
-	 * @param stringHashArraylist the stringHashArraylist to set
-	 */
-	public void setStringHashArraylist(ArrayList<StringHash> stringHashArraylist) {
-		StringHashArraylist = stringHashArraylist;
-	}
 	/**
 	 * @return the nextPeerID
 	 */
@@ -198,6 +184,7 @@ public class PeerNode {
 		this.hashtable = hashtable;
 	}
 
+	@Override
 	public String toString(){
 		return "Hostname: "+this.Hostname+" Port: "+this.Port+" ID: "+this.ID+" NextHostname: "+this.NextPeerHostName+" NextPort: "+
 			this.NextPeerPort+" NextID: "+this.NextPeerID+" MaxID: "+this.MaxId+" isFirstPeer: "+this.firstPeer+" Hashtable: "+this.getHashtable().toString();
@@ -549,7 +536,7 @@ public class PeerNode {
     public static int getAscii(String s){
     	int result = 0;
     	for (int i=0; i<s.length();i++)
-    		result +=(int)s.charAt(i);
+    		result +=s.charAt(i);
     	return result;
     }
     

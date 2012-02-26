@@ -12,26 +12,26 @@ protocol-implementation.git .
 Design
 ------
 This program consists of 6 separate class objects as follow:
--peer
+*peer--
 	Contains the main method, creates an instance of PeerNode, processes the arguments that are passed to
 	it from the command line through a method in the PeerNode instance, and passes the PeerNode object to
 	Serverthread class.
--ServerThread
+*ServerThread--
 	Implements the Server part of the application. This server side of the application is implemented using multi
 	threading design. It further uses methods inside the PeerNode object to processes the messages received
 	from client and reply to them.
--PeerNode
+*PeerNode--
 	Implements a peer node in the network, it has all the required properties that defined in the assignment. It
 	uses two objects Request and Response and Settings. The client part of the application that interacts with
 	the server is implemented int this class inside a method. This class also takes care of all the conditions in
 	the protocol when a message is being sent and received.
--Request
+*Request--
 	Simulates a message that is sent to a server. When server gets the message the message is translated into
 	this object, that makes it easier to further process the message through the application.
--Response
+*Response--
 	Response class is similar to Request class with the only difference that it simulates messages that are sent
 	from server to the client and is processed through client section of application.
--Settings
+*Settings--
 	This class has properties that are used as setting in the program. As an example the protocol version is
 	defined here and can be changed if necessary.
 

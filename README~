@@ -1,16 +1,15 @@
-P2P Distributed Hash Table Simple Protocol Implementation
-=========================================================
-
+------------------------------
 Summary
--------
+------------------------------
 In this project the P2P Distributed Hash Table application is implemented in Java. This program is
 created using Object oriented design. Documentations are also provided in the code for a better un-
 derstanding of how the application works. During development of this application, GIT source version
 controlling system was used and the code is hosted on Github: git://github.com/hmrtk/p2p-dht-simple-
 protocol-implementation.git .
 
+------------------------------
 Design
-------
+------------------------------
 This program consists of 6 separate class objects as follow:
 -peer
 	Contains the main method, creates an instance of PeerNode, processes the arguments that are passed to
@@ -35,9 +34,9 @@ This program consists of 6 separate class objects as follow:
 	This class has properties that are used as setting in the program. As an example the protocol version is
 	defined here and can be changed if necessary.
 
-
+------------------------------
 Installation
-------------
+------------------------------
 This program was developed using Eclipse IDE. The compiled files are located in the /bin folder and source
 files are located in the /src folder.
 The peer.java file is the starting point of the application that creates a peer node in the network. The

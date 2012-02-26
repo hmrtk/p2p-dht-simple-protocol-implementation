@@ -1,4 +1,4 @@
-P2P Distributed Hash Table Simple Protocol Implementation
+P2P DHT Simple Protocol Implementation
 =========================================================
 
 Summary

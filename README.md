@@ -4,19 +4,16 @@ P2P DHT Simple Protocol Implementation
 Summary
 -------
 In this project the P2P Distributed Hash Table application is implemented in Java. This program is
-created using Object oriented design. Documentations are also provided in the code for a better un-
-derstanding of how the application works. During development of this application, GIT source version
-controlling system was used and the code is hosted on Github: git://github.com/hmrtk/p2p-dht-simple-
-protocol-implementation.git .
+created using Object oriented design. In-code documentation is provided to better understand of how the application works.
 
 Design
 ------
-This program consists of 6 separate class objects as follow:
+This program consists of 6 separate class objects:
 
 * peer -- Contains the main method, creates an instance of PeerNode, processes the arguments that are passed to
 it from the command line through a method in the PeerNode instance, and passes the PeerNode object to
 Serverthread class.
-* ServerThread -- Implements the Server part of the application. This server side of the application is implemented using multi threading design. It further uses methods inside the PeerNode object to processes the messages received from client and reply to them.
+* ServerThread -- Implements the Server part of the application. The server side of this application is implemented using multi-threading design. It further uses methods inside the PeerNode object to processes messages received from client and reply to them.
 * PeerNode -- Implements a peer node in the network, it has all the required properties that defined in the assignment. It uses two objects Request and Response and Settings. The client part of the application that interacts with the server is implemented int this class inside a method. This class also takes care of all the conditions in
 the protocol when a message is being sent and received.
 * Request -- Simulates a message that is sent to a server. When server gets the message the message is translated into this object, that makes it easier to further process the message through the application.
@@ -26,10 +23,8 @@ the protocol when a message is being sent and received.
 
 Installation
 ------------
-This program was developed using Eclipse IDE. The compiled files are located in the /bin folder and source
-files are located in the /src folder.
-The peer.java file is the starting point of the application that creates a peer node in the network. The
-switches that can be passed to this file are:
+This program was developed using Eclipse IDE. Compiled files are located under /bin folder and source files are located under /src folder.
+peer.java file is the starting point of the application that creates a peer node in the network. Switches that can be passed to this file are:
 
 	-i n — the ID for this peer
 	-h x — host name of the computer that this program is running on
